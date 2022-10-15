@@ -1,0 +1,6 @@
+{
+  "GameMasterEntityId": "tic-tac-toe-game-master",
+  "GameMasterDisplayName": "TicTacToe Game Master",
+  "ScriptExtension": ".js",
+  "IgnorePattern":  "_*.js"
+}
