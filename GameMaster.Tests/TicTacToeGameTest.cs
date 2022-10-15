@@ -31,14 +31,14 @@ public class TicTacToeGameTest
         await game.Call.TakeTurn(boardEntity, 3);
 
         var boardState = game.State(boardEntity);
-        Assert.Equivalent(new [] { " ", " ", " ", "x", " ", " ", " ", " ", " " }, boardState.board);
+        Assert.Equivalent(new[] { " ", " ", " ", "x", " ", " ", " ", " ", " " }, boardState.board);
         Assert.False(boardState.isComplete);
         // TODO: Assert.Equal("It is Player2's turn!", boardState.message);
 
         game.SetCurrentPlayer(player2);
         await game.Call.TakeTurn(boardEntity, 4);
         boardState = game.State(boardEntity);
-        Assert.Equivalent(new [] { " ", " ", " ", "x", "o", " ", " ", " ", " " }, boardState.board);
+        Assert.Equivalent(new[] { " ", " ", " ", "x", "o", " ", " ", " ", " " }, boardState.board);
     }
 
     [Theory(DisplayName = "Play Game to Win"), TicTacToeTest]
@@ -64,9 +64,55 @@ public class TicTacToeGameTest
         await game.Call.TakeTurn(boardEntity, 5);
 
         var boardState = game.State(boardEntity);
-        Assert.Equivalent(new [] { " ", " ", "o", "x", "x", "x", "o", " ", " " }, boardState.board);
+        Assert.Equivalent(new[] { " ", " ", "o", "x", "x", "x", "o", " ", " " }, boardState.board);
         Assert.True(boardState.isComplete);
         Assert.Equal(player1.Id, boardState.winner);
         // TODO: message == "Player1 wins!"
+    }
+
+    [Theory(DisplayName = "Play Game to Tie"), TicTacToeTest]
+    public async Task PlayToTie(IGameTestHarness game)
+    {
+        var player2 = await game.NewCurrentPlayer();
+        var player1 = await game.NewCurrentPlayer();
+        GameEntityState boardEntity = await game.Create.TicTacToeBoard();
+
+        await game.Call.StartGame(boardEntity, player2.Id);
+        await game.Call.TakeTurn(boardEntity, 0);
+
+        game.SetCurrentPlayer(player2);
+        await game.Call.TakeTurn(boardEntity, 1);
+
+        game.SetCurrentPlayer(player1);
+        await game.Call.TakeTurn(boardEntity, 2);
+
+        game.SetCurrentPlayer(player2);
+        await game.Call.TakeTurn(boardEntity, 4);
+
+        game.SetCurrentPlayer(player1);
+        await game.Call.TakeTurn(boardEntity, 5);
+
+        game.SetCurrentPlayer(player2);
+        await game.Call.TakeTurn(boardEntity, 6);
+
+        game.SetCurrentPlayer(player1);
+        await game.Call.TakeTurn(boardEntity, 7);
+
+        game.SetCurrentPlayer(player2);
+        await game.Call.TakeTurn(boardEntity, 8);
+
+        game.SetCurrentPlayer(player1);
+        await game.Call.TakeTurn(boardEntity, 3);
+
+        var boardState = game.State(boardEntity);
+        Assert.Equivalent(new[]
+        {
+            "x", "o", "x",
+            "x", "o", "x",
+            "o", "x", "o"
+        }, boardState.board);
+        Assert.True(boardState.isComplete);
+        Assert.Null(boardState.winner);
+        Assert.Equal("Tie Game!", boardState.message);
     }
 }
