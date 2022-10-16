@@ -2,4 +2,5 @@
 global using Monxterz.StatePlatform;
 global using Monxterz.StatePlatform.Client;
 global using Monxterz.StatePlatform.ClientServices;
+global using Terminal.Gui;
 global using TicTacToe.Console;
