@@ -59,6 +59,7 @@ async Task Start(GameEntityState boardEntity)
 
 async Task Play(GameEntityState boardEntity)
 {
+    await Refresh(boardEntity, gameStateClient);
     if (!IsStarted(boardEntity))
     {
         await Start(boardEntity);
@@ -68,14 +69,19 @@ async Task Play(GameEntityState boardEntity)
         PrintBoard(boardEntity, game);
         PrintMessage(boardEntity, game);
         var square = InputOf<int>("Square");
-        try
+        if (square >= 0 && square <= 8)
         {
-            await game.Call.TakeTurn(boardEntity, square);
+            try
+            {
+                await game.Call.TakeTurn(boardEntity, square);
+            }
+            catch (ApiException apiException)
+            {
+                WriteLine(apiException.SimpleMessage());
+            }
         }
-        catch (ApiException apiException)
-        {
-            WriteLine(apiException.SimpleMessage());
-        }
+        else
+            await Refresh(boardEntity, gameStateClient);
     }
     PrintBoard(boardEntity, game);
     PrintMessage(boardEntity, game);
@@ -120,6 +126,14 @@ static bool IsOwnerOrPlayer(GameEntityState boardEntity, IChangeUserService chan
 static bool IsComplete(GameEntityState boardEntity)
 {
     return boardEntity.GetPublicValue<bool>(GameMasterId, "isComplete");
+}
+
+static async Task Refresh(GameEntityState entity, IGameStateClient gameStateClient)
+{
+    // TODO: Extract refresh function to IGameTestHarness
+    // Update entity in place so it is updated in the collection
+    var updated = await gameStateClient.GetEntityAsync(entity.Id!) ?? throw new Exception("Failed to fetch updated game board");
+    entity.UpdateFrom(updated);
 }
 
 async Task<ImmutableList<GameEntityState>> GetBoards(IGameStateClient gameStateClient)
