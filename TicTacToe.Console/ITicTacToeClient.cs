@@ -13,4 +13,5 @@ public interface ITicTacToeClient
     Task Refresh(GameEntityState entity);
     Task Start(GameEntityState boardEntity, string opponentId);
     Task TakeTurn(GameEntityState boardEntity, int square);
+    string[] GetBoardState(GameEntityState boardEntity);
 }

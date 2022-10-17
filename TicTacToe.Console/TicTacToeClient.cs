@@ -131,4 +131,10 @@ public class TicTacToeClient : ITicTacToeClient
                           .ToImmutableList();
         return boards;
     }
+
+    public string[] GetBoardState(GameEntityState boardEntity)
+    {
+        IEnumerable<object> objects = game.State(boardEntity).board;
+        return objects.Cast<string>().ToArray();
+    }
 }

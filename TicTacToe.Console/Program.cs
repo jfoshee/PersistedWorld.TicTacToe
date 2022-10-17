@@ -8,11 +8,8 @@ var services = new ServiceCollection();
 services.AddGameStateClientServices(GameMasterId, baseUrl);
 services.AddTransient<ITicTacToeClient, TicTacToeClient>();
 services.AddTransient<IClientNotification, ConsoleClientNotification>();
-
 var serviceProvider = services.BuildServiceProvider();
-var game = serviceProvider.GetRequiredService<IGameTestHarness>();
 var ticTacToeClient = serviceProvider.GetRequiredService<ITicTacToeClient>();
-var clientNotification = serviceProvider.GetRequiredService<IClientNotification>();
 
 // Login
 bool authenticated = false;
@@ -22,6 +19,7 @@ while (!authenticated)
     authenticated = await ticTacToeClient.Login(playerId);
 }
 
+// Game Loop
 bool quit = false;
 while (!quit)
 {
@@ -59,7 +57,7 @@ async Task Play(GameEntityState boardEntity)
     {
         // HACK: Refresh here because e.g. might have tried to take turn in occupied square
         await ticTacToeClient.Refresh(boardEntity);
-        PrintBoard(boardEntity, game);
+        PrintBoard(boardEntity);
         PrintMessage(boardEntity);
         var square = InputOf<int>("Square Index (Negative number to leave game)");
         if (square >= 0 && square <= 8)
@@ -70,7 +68,7 @@ async Task Play(GameEntityState boardEntity)
             // Enter negative number to leave this board
             return;
     }
-    PrintBoard(boardEntity, game);
+    PrintBoard(boardEntity);
     PrintMessage(boardEntity);
 }
 
@@ -80,9 +78,9 @@ void PrintMessage(GameEntityState boardEntity)
     WriteLine(message);
 }
 
-static void PrintBoard(GameEntityState boardEntity, IGameTestHarness game)
+void PrintBoard(GameEntityState boardEntity)
 {
-    var b = game.State(boardEntity).board;
+    var b = ticTacToeClient.GetBoardState(boardEntity);
     WriteLine($" {b[0]} | {b[1]} | {b[2]} ");
     WriteLine("---+---+---");
     WriteLine($" {b[3]} | {b[4]} | {b[5]} ");
