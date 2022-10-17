@@ -1,4 +1,4 @@
-﻿namespace TicTacToe.Console;
+﻿namespace TicTacToe.Console.Common;
 
 public static class EntityExtensions
 {
