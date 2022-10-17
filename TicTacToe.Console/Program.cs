@@ -25,23 +25,32 @@ if (player.SystemState.Location == "00")
 }
 WriteLine($"Hello, {player.DisplayName}. Your location is {player.SystemState.Location}");
 
-while (true)
+bool quit = false;
+while (!quit)
 {
     var choices = new List<(string, Func<Task>)>();
-    choices.Add(("New Game", async () =>
+    choices.Add(("Quit", () =>
     {
-        // New game
-        GameEntityState boardEntity = await game.Create.TicTacToeBoard();
-        WriteLine("New game created");
-        await Play(boardEntity);
+        quit = true;
+        return Task.CompletedTask;
     }
     ));
+    choices.Add(("Refresh", () => Task.CompletedTask));
+    choices.Add(("New Game", async () => await NewGame(game, gameStateClient)));
     var boards = await GetBoards(gameStateClient);
     foreach (var board in boards)
     {
-        choices.Add(($"Resume Game: {board.SystemState.CreatedAt:g} {board.SystemState.Location}", () => Play(board)));
+        choices.Add(($"Resume Game: {board.SystemState.CreatedAt.LocalDateTime:g} {board.SystemState.Location}", () => Play(board)));
     }
     await Choose(choices);
+}
+
+
+async Task NewGame(IGameTestHarness game, IGameStateClient? gameStateClient)
+{
+    GameEntityState boardEntity = await game.Create.TicTacToeBoard();
+    WriteLine("New game created");
+    await Play(boardEntity);
 }
 
 async Task Start(GameEntityState boardEntity)
@@ -138,15 +147,17 @@ static async Task Refresh(GameEntityState entity, IGameStateClient gameStateClie
 
 async Task<ImmutableList<GameEntityState>> GetBoards(IGameStateClient gameStateClient)
 {
-    var nearby = await gameStateClient.GetEntitiesNearbyAsync()
-                 ?? throw new Exception("Failed to fetch nearby entities");
+    // TODO: How is it possible to get boards where I am the opponent, but not in my location?
     // Enumerate the player's boards
     var owned = await gameStateClient.GetEntitiesOwnedAsync()
                 ?? throw new Exception("Failed to fetch owned entities");
-    // TODO: Active (not complete) boards only
+    // Get nearby boards where I might be the opponent
+    var nearby = await gameStateClient.GetEntitiesNearbyAsync()
+                 ?? throw new Exception("Failed to fetch nearby entities");
     var boards = owned.Concat(nearby)
                       .DistinctBy(e => e.Id)
                       .Where(entity => entity.IsTicTacToeBoard())
+                      .Where(entity => !IsComplete(entity))
                       .Where(entity => IsOwnerOrPlayer(entity, changeUserService))
                       .ToImmutableList();
     return boards;
