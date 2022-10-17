@@ -39,15 +39,7 @@ while (true)
     {
         choices.Add(($"Resume Game: {board.SystemState.CreatedAt:g}", () => Play(board)));
     }
-
-    for (int i = 0; i < choices.Count; i++)
-    {
-        var (text, action) = choices[i];
-        WriteLine($"{i} {text}");
-    }
-    var choice = InputOf<int>("Choose");
-    var chosenAction = choices[choice].Item2;
-    await chosenAction();
+    await Choose(choices);
 }
 
 async Task Start(GameEntityState boardEntity)

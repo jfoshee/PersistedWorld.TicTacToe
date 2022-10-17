@@ -18,7 +18,15 @@ public static class ConsoleUi
         return (T)Convert.ChangeType(text, type);
     }
 
-    //public static void Choose(IList<(string, Func<Task>)> choices)
-    //{
-    //}
+    public static async Task Choose(IList<(string, Func<Task>)> choices)
+    {
+        for (int i = 0; i < choices.Count; i++)
+        {
+            var (text, _) = choices[i];
+            WriteLine($"{i} {text}");
+        }
+        var choice = InputOf<int>("Choose");
+        var action = choices[choice].Item2;
+        await action();
+    }
 }
