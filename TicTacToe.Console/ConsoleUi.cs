@@ -11,10 +11,14 @@ public static class ConsoleUi
         return input;
     }
 
-    //static T InputOf<T>(string prompt)
+    public static T InputOf<T>(string prompt)
+    {
+        var text = Input(prompt);
+        var type = typeof(T);
+        return (T)Convert.ChangeType(text, type);
+    }
+
+    //public static void Choose(IList<(string, Func<Task>)> choices)
     //{
-    //    var text = Input(prompt);
-    //    var type = typeof(T);
-    //    return (T)Convert.ChangeType(text, type);
     //}
 }
