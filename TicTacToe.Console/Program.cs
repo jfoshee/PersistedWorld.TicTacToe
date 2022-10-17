@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using static System.Console;
 using static TicTacToe.Console.Constants;
+using static TicTacToe.Console.ConsoleUi;
 
 // Setup services
 var baseUrl = "https://localhost:7264";
@@ -27,18 +28,3 @@ for (int i = 0; i < boards.Count; i++)
     var board = boards[i];
     WriteLine($"{i} {board.Id}");
 }
-
-
-static string Input(string prompt)
-{
-    Write($"{prompt}> ");
-    var input = ReadLine() ?? "";
-    return input;
-}
-
-//static T InputOf<T>(string prompt)
-//{
-//    var text = Input(prompt);
-//    var type = typeof(T);
-//    return (T)Convert.ChangeType(text, type);
-//}
