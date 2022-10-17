@@ -11,35 +11,26 @@ services.AddTransient<IClientNotification, ConsoleClientNotification>();
 
 var serviceProvider = services.BuildServiceProvider();
 var game = serviceProvider.GetRequiredService<IGameTestHarness>();
-var gameStateClient = serviceProvider.GetRequiredService<IGameStateClient>();
-var changeUserService = serviceProvider.GetRequiredService<IChangeUserService>();
 var ticTacToeClient = serviceProvider.GetRequiredService<ITicTacToeClient>();
 var clientNotification = serviceProvider.GetRequiredService<IClientNotification>();
 
 // Login
-var playerId = Input("Player ID");
-playerId = playerId.Trim();
-await changeUserService.ChangeUserAsync(playerId);
-var player = await gameStateClient.GetUserAsync() ?? throw new Exception("Failed to fetch Player");
-// HACK: Move players in old "00" location to new default "00:00:00:00:00"
-if (player.SystemState.Location == "00")
+bool authenticated = false;
+while (!authenticated)
 {
-    await game.Move(player, "00:00:00:00:00");
+    var playerId = Input("Player ID");
+    authenticated = await ticTacToeClient.Login(playerId);
 }
-WriteLine($"Hello, {player.DisplayName}. Your location is {player.SystemState.Location}");
 
 bool quit = false;
 while (!quit)
 {
-    var choices = new List<(string, Func<Task>)>();
-    choices.Add(("Quit", () =>
+    var choices = new List<(string, Func<Task>)>
     {
-        quit = true;
-        return Task.CompletedTask;
-    }
-    ));
-    choices.Add(("Refresh", () => Task.CompletedTask));
-    choices.Add(("New Game", () => NewGame()));
+        ("Quit", () => { quit = true; return Task.CompletedTask; }),
+        ("Refresh", () => Task.CompletedTask),
+        ("New Game", () => NewGame())
+    };
     var boards = await ticTacToeClient.GetBoards();
     foreach (var board in boards)
     {

@@ -4,6 +4,7 @@ namespace TicTacToe.Console;
 
 public interface ITicTacToeClient
 {
+    Task<bool> Login(string playerId);
     Task<GameEntityState?> CreateNewGame();
     Task<ImmutableList<GameEntityState>> GetBoards();
     string GetMessage(GameEntityState boardEntity);

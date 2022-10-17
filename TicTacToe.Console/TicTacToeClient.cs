@@ -22,6 +22,27 @@ public class TicTacToeClient : ITicTacToeClient
         this.clientNotification = clientNotification ?? throw new ArgumentNullException(nameof(clientNotification));
     }
 
+    public async Task<bool> Login(string playerId)
+    {
+        playerId = playerId.Trim();
+        try
+        {
+            await changeUserService.ChangeUserAsync(playerId);
+        }
+        catch (ApiException apiException)
+        {
+            clientNotification.ShowError(apiException);
+            return false;
+        }
+        var player = await gameStateClient.GetUserAsync() ?? throw new Exception("Failed to fetch current Player Entity");
+        // HACK: Move players in old "00" location to new default "00:00:00:00:00"
+        if (player.SystemState.Location == "00")
+        {
+            await game.Move(player, "00:00:00:00:00");
+        }
+        clientNotification.ShowInfo($"Hello, {player.DisplayName}. Your location is {player.SystemState.Location}");
+        return true;
+    }
 
     public async Task<GameEntityState?> CreateNewGame()
     {
