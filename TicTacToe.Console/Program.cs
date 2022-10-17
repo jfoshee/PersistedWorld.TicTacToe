@@ -8,10 +8,14 @@ using static TicTacToe.Console.Constants;
 var baseUrl = "https://localhost:7264";
 var services = new ServiceCollection();
 services.AddGameStateClientServices(GameMasterId, baseUrl);
+services.AddTransient<ITicTacToeClient, TicTacToeClient>();
+services.AddTransient<IClientNotification, ConsoleClientNotification>();
+
 var serviceProvider = services.BuildServiceProvider();
 var game = serviceProvider.GetRequiredService<IGameTestHarness>();
 var gameStateClient = serviceProvider.GetRequiredService<IGameStateClient>();
 var changeUserService = serviceProvider.GetRequiredService<IChangeUserService>();
+var ticTacToeClient = serviceProvider.GetRequiredService<ITicTacToeClient>();
 
 // Login
 var playerId = Input("Player ID");
@@ -37,7 +41,7 @@ while (!quit)
     ));
     choices.Add(("Refresh", () => Task.CompletedTask));
     choices.Add(("New Game", async () => await NewGame(game, gameStateClient)));
-    var boards = await GetBoards(gameStateClient);
+    var boards = await ticTacToeClient.GetBoards();
     foreach (var board in boards)
     {
         choices.Add(($"Resume Game: {board.SystemState.CreatedAt.LocalDateTime:g} {board.SystemState.Location}", () => Play(board)));
@@ -53,32 +57,20 @@ async Task NewGame(IGameTestHarness game, IGameStateClient? gameStateClient)
     await Play(boardEntity);
 }
 
-async Task Start(GameEntityState boardEntity)
-{
-    var opponentId = Input("Opponent ID");
-    try
-    {
-        await game.Call.StartGame(boardEntity, opponentId);
-    }
-    catch (ApiException apiException)
-    {
-        WriteLine(apiException.SimpleMessage());
-    }
-}
-
 async Task Play(GameEntityState boardEntity)
 {
-    await Refresh(boardEntity, gameStateClient);
-    if (!IsStarted(boardEntity))
+    await ticTacToeClient.Refresh(boardEntity);
+    if (!ticTacToeClient.IsStarted(boardEntity))
     {
-        await Start(boardEntity);
+        var opponentId = Input("Opponent ID");
+        await ticTacToeClient.Start(boardEntity, opponentId);
     }
-    while (!IsComplete(boardEntity))
+    while (!ticTacToeClient.IsComplete(boardEntity))
     {
         // HACK: Refresh here because e.g. might have tried to take turn in occupied square
-        await Refresh(boardEntity, gameStateClient);
+        await ticTacToeClient.Refresh(boardEntity);
         PrintBoard(boardEntity, game);
-        PrintMessage(boardEntity, game);
+        PrintMessage(boardEntity);
         var square = InputOf<int>("Square Index (Negative number to leave game)");
         if (square >= 0 && square <= 8)
         {
@@ -96,17 +88,12 @@ async Task Play(GameEntityState boardEntity)
             return;
     }
     PrintBoard(boardEntity, game);
-    PrintMessage(boardEntity, game);
+    PrintMessage(boardEntity);
 }
 
-static string GetMessage(GameEntityState boardEntity, IGameTestHarness game)
+void PrintMessage(GameEntityState boardEntity)
 {
-    return game.State(boardEntity).message;
-}
-
-static void PrintMessage(GameEntityState boardEntity, IGameTestHarness game)
-{
-    var message = GetMessage(boardEntity, game);
+    var message = ticTacToeClient.GetMessage(boardEntity);
     WriteLine(message);
 }
 
@@ -118,50 +105,4 @@ static void PrintBoard(GameEntityState boardEntity, IGameTestHarness game)
     WriteLine($" {b[3]} | {b[4]} | {b[5]} ");
     WriteLine("---+---+---");
     WriteLine($" {b[6]} | {b[7]} | {b[8]} ");
-}
-
-static bool IsStarted(GameEntityState boardEntity)
-{
-    var players = boardEntity.GetPublicValue<IList<object>>(GameMasterId, "players");
-    return players?.Count == 2;
-}
-
-static bool IsOwnerOrPlayer(GameEntityState boardEntity, IChangeUserService changeUserService)
-{
-    var owner = boardEntity.SystemState.OwnerId;
-    if (owner == changeUserService.CurrentUserId)
-        return true;
-    var players = boardEntity.GetPublicValue<IList<object>>(GameMasterId, "players")?.Cast<string>();
-    return players is not null && players.Contains(changeUserService.CurrentUserId);
-}
-
-static bool IsComplete(GameEntityState boardEntity)
-{
-    return boardEntity.GetPublicValue<bool>(GameMasterId, "isComplete");
-}
-
-static async Task Refresh(GameEntityState entity, IGameStateClient gameStateClient)
-{
-    // TODO: Extract refresh function to IGameTestHarness
-    // Update entity in place so it is updated in the collection
-    var updated = await gameStateClient.GetEntityAsync(entity.Id!) ?? throw new Exception("Failed to fetch updated game board");
-    entity.UpdateFrom(updated);
-}
-
-async Task<ImmutableList<GameEntityState>> GetBoards(IGameStateClient gameStateClient)
-{
-    // TODO: How is it possible to get boards where I am the opponent, but not in my location?
-    // Enumerate the player's boards
-    var owned = await gameStateClient.GetEntitiesOwnedAsync()
-                ?? throw new Exception("Failed to fetch owned entities");
-    // Get nearby boards where I might be the opponent
-    var nearby = await gameStateClient.GetEntitiesNearbyAsync()
-                 ?? throw new Exception("Failed to fetch nearby entities");
-    var boards = owned.Concat(nearby)
-                      .DistinctBy(e => e.Id)
-                      .Where(entity => entity.IsTicTacToeBoard())
-                      .Where(entity => !IsComplete(entity))
-                      .Where(entity => IsOwnerOrPlayer(entity, changeUserService))
-                      .ToImmutableList();
-    return boards;
 }
