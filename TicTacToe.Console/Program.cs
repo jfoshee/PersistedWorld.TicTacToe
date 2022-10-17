@@ -66,6 +66,8 @@ async Task Play(GameEntityState boardEntity)
     }
     while (!IsComplete(boardEntity))
     {
+        // HACK: Refresh here because e.g. might have tried to take turn in occupied square
+        await Refresh(boardEntity, gameStateClient);
         PrintBoard(boardEntity, game);
         PrintMessage(boardEntity, game);
         var square = InputOf<int>("Square");
@@ -80,8 +82,6 @@ async Task Play(GameEntityState boardEntity)
                 WriteLine(apiException.SimpleMessage());
             }
         }
-        else
-            await Refresh(boardEntity, gameStateClient);
     }
     PrintBoard(boardEntity, game);
     PrintMessage(boardEntity, game);
