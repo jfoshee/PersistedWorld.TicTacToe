@@ -26,7 +26,6 @@ while (true)
         // New game
         GameEntityState boardEntity = await game.Create.TicTacToeBoard();
         WriteLine("New game created");
-        await Start(boardEntity);
         await Play(boardEntity);
     }
     ));
@@ -66,8 +65,11 @@ async Task Start(GameEntityState boardEntity)
 
 async Task Play(GameEntityState boardEntity)
 {
-    // TODO: If not started, Start
-    while (!boardEntity.GetPublicValue<bool>(GameMasterId, "isComplete"))
+    if (!IsStarted(boardEntity))
+    {
+        await Start(boardEntity);
+    }
+    while (!IsComplete(boardEntity))
     {
         PrintMessage(boardEntity, game);
         var b = game.State(boardEntity).board;
@@ -99,4 +101,15 @@ static void PrintMessage(GameEntityState boardEntity, IGameTestHarness game)
 {
     var message = GetMessage(boardEntity, game);
     WriteLine(message);
+}
+
+static bool IsStarted(GameEntityState boardEntity)
+{
+    var players = boardEntity.GetPublicValue<IList<object>>(GameMasterId, "players");
+    return players?.Count == 2;
+}
+
+static bool IsComplete(GameEntityState boardEntity)
+{
+    return boardEntity.GetPublicValue<bool>(GameMasterId, "isComplete");
 }
