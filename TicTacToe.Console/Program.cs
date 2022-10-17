@@ -79,7 +79,7 @@ async Task Play(GameEntityState boardEntity)
         await Refresh(boardEntity, gameStateClient);
         PrintBoard(boardEntity, game);
         PrintMessage(boardEntity, game);
-        var square = InputOf<int>("Square");
+        var square = InputOf<int>("Square Index (Negative number to leave game)");
         if (square >= 0 && square <= 8)
         {
             try
@@ -91,6 +91,9 @@ async Task Play(GameEntityState boardEntity)
                 WriteLine(apiException.SimpleMessage());
             }
         }
+        else if (square < 0)
+            // Enter negative number to leave this board
+            return;
     }
     PrintBoard(boardEntity, game);
     PrintMessage(boardEntity, game);
