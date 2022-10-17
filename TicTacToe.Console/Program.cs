@@ -71,14 +71,8 @@ async Task Play(GameEntityState boardEntity)
     }
     while (!IsComplete(boardEntity))
     {
+        PrintBoard(boardEntity, game);
         PrintMessage(boardEntity, game);
-        var b = game.State(boardEntity).board;
-        WriteLine($" {b[0]} | {b[1]} | {b[2]} ");
-        WriteLine("---+---+---");
-        WriteLine($" {b[3]} | {b[4]} | {b[5]} ");
-        WriteLine("---+---+---");
-        WriteLine($" {b[6]} | {b[7]} | {b[8]} ");
-        await Task.Yield();
         var square = InputOf<int>("Square");
         try
         {
@@ -89,6 +83,7 @@ async Task Play(GameEntityState boardEntity)
             WriteLine(apiException.SimpleMessage());
         }
     }
+    PrintBoard(boardEntity, game);
     PrintMessage(boardEntity, game);
 }
 
@@ -101,6 +96,16 @@ static void PrintMessage(GameEntityState boardEntity, IGameTestHarness game)
 {
     var message = GetMessage(boardEntity, game);
     WriteLine(message);
+}
+
+static void PrintBoard(GameEntityState boardEntity, IGameTestHarness game)
+{
+    var b = game.State(boardEntity).board;
+    WriteLine($" {b[0]} | {b[1]} | {b[2]} ");
+    WriteLine("---+---+---");
+    WriteLine($" {b[3]} | {b[4]} | {b[5]} ");
+    WriteLine("---+---+---");
+    WriteLine($" {b[6]} | {b[7]} | {b[8]} ");
 }
 
 static bool IsStarted(GameEntityState boardEntity)
