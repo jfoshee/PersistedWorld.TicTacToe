@@ -1,17 +1,23 @@
 ﻿namespace TicTacToe.Console;
+
+using Monxterz.StatePlatform.Client;
+using TicTacToe.Console.Common;
 using static System.Console;
 
 public class ConsoleClientNotification : IClientNotification
 {
-    // TODO: ShowError(Exception)
+    public void ShowInfo(string message)
+    {
+        WriteLine(message);
+    }
 
     public void ShowError(string message)
     {
         WriteLine(message);
     }
 
-    public void ShowInfo(string message)
+    public void ShowError(ApiException apiException)
     {
-        WriteLine(message);
+        ShowError(apiException.SimpleMessage());
     }
 }

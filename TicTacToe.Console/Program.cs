@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using TicTacToe.Console.Common;
+﻿using TicTacToe.Console.Common;
 using static System.Console;
 using static TicTacToe.Console.ConsoleUi;
 using static TicTacToe.Console.Constants;
@@ -16,6 +15,7 @@ var game = serviceProvider.GetRequiredService<IGameTestHarness>();
 var gameStateClient = serviceProvider.GetRequiredService<IGameStateClient>();
 var changeUserService = serviceProvider.GetRequiredService<IChangeUserService>();
 var ticTacToeClient = serviceProvider.GetRequiredService<ITicTacToeClient>();
+var clientNotification = serviceProvider.GetRequiredService<IClientNotification>();
 
 // Login
 var playerId = Input("Player ID");
@@ -80,7 +80,7 @@ async Task Play(GameEntityState boardEntity)
             }
             catch (ApiException apiException)
             {
-                WriteLine(apiException.SimpleMessage());
+                clientNotification.ShowError(apiException);
             }
         }
         else if (square < 0)

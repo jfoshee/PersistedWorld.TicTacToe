@@ -30,7 +30,7 @@ public class TicTacToeClient : ITicTacToeClient
         }
         catch (ApiException apiException)
         {
-            clientNotification.ShowError(apiException.SimpleMessage());
+            clientNotification.ShowError(apiException);
         }
     }
 
