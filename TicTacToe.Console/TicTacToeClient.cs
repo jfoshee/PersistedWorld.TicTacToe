@@ -22,11 +22,37 @@ public class TicTacToeClient : ITicTacToeClient
         this.clientNotification = clientNotification ?? throw new ArgumentNullException(nameof(clientNotification));
     }
 
+
+    public async Task<GameEntityState?> CreateNewGame()
+    {
+        try
+        {
+            return await game.Create.TicTacToeBoard();
+        }
+        catch (ApiException apiException)
+        {
+            clientNotification.ShowError(apiException);
+        }
+        return null;
+    }
+
     public async Task Start(GameEntityState boardEntity, string opponentId)
     {
         try
         {
             await game.Call.StartGame(boardEntity, opponentId);
+        }
+        catch (ApiException apiException)
+        {
+            clientNotification.ShowError(apiException);
+        }
+    }
+
+    public async Task TakeTurn(GameEntityState boardEntity, int square)
+    {
+        try
+        {
+            await game.Call.TakeTurn(boardEntity, square);
         }
         catch (ApiException apiException)
         {

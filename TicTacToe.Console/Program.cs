@@ -1,5 +1,4 @@
-﻿using TicTacToe.Console.Common;
-using static System.Console;
+﻿using static System.Console;
 using static TicTacToe.Console.ConsoleUi;
 using static TicTacToe.Console.Constants;
 
@@ -40,7 +39,7 @@ while (!quit)
     }
     ));
     choices.Add(("Refresh", () => Task.CompletedTask));
-    choices.Add(("New Game", async () => await NewGame(game, gameStateClient)));
+    choices.Add(("New Game", () => NewGame()));
     var boards = await ticTacToeClient.GetBoards();
     foreach (var board in boards)
     {
@@ -50,11 +49,11 @@ while (!quit)
 }
 
 
-async Task NewGame(IGameTestHarness game, IGameStateClient? gameStateClient)
+async Task NewGame()
 {
-    GameEntityState boardEntity = await game.Create.TicTacToeBoard();
-    WriteLine("New game created");
-    await Play(boardEntity);
+    var boardEntity = await ticTacToeClient.CreateNewGame();
+    if (boardEntity is not null)
+        await Play(boardEntity);
 }
 
 async Task Play(GameEntityState boardEntity)
@@ -74,14 +73,7 @@ async Task Play(GameEntityState boardEntity)
         var square = InputOf<int>("Square Index (Negative number to leave game)");
         if (square >= 0 && square <= 8)
         {
-            try
-            {
-                await game.Call.TakeTurn(boardEntity, square);
-            }
-            catch (ApiException apiException)
-            {
-                clientNotification.ShowError(apiException);
-            }
+            await ticTacToeClient.TakeTurn(boardEntity, square);
         }
         else if (square < 0)
             // Enter negative number to leave this board
