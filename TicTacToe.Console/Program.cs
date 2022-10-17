@@ -1,8 +1,8 @@
 ﻿using System.Collections.Immutable;
-using static System.Console;
-using static TicTacToe.Console.Constants;
-using static TicTacToe.Console.ConsoleUi;
 using TicTacToe.Console.Common;
+using static System.Console;
+using static TicTacToe.Console.ConsoleUi;
+using static TicTacToe.Console.Constants;
 
 // Setup services
 var baseUrl = "https://localhost:7264";
@@ -17,6 +17,13 @@ var changeUserService = serviceProvider.GetRequiredService<IChangeUserService>()
 var playerId = Input("Player ID");
 playerId = playerId.Trim();
 await changeUserService.ChangeUserAsync(playerId);
+var player = await gameStateClient.GetUserAsync() ?? throw new Exception("Failed to fetch Player");
+// HACK: Move players in old "00" location to new default "00:00:00:00:00"
+if (player.SystemState.Location == "00")
+{
+    await game.Move(player, "00:00:00:00:00");
+}
+WriteLine($"Hello, {player.DisplayName}. Your location is {player.SystemState.Location}");
 
 while (true)
 {
@@ -29,15 +36,10 @@ while (true)
         await Play(boardEntity);
     }
     ));
-    // Enumerate the player's boards
-    var owned = await gameStateClient.GetEntitiesOwnedAsync()
-                ?? throw new Exception("Failed to fetch owned entities");
-    // TODO: Active (not complete) boards only
-    var boards = owned.Where(entity => entity.IsTicTacToeBoard())
-                      .ToImmutableList();
+    var boards = await GetBoards(gameStateClient);
     foreach (var board in boards)
     {
-        choices.Add(($"Resume Game: {board.SystemState.CreatedAt:g}", () => Play(board)));
+        choices.Add(($"Resume Game: {board.SystemState.CreatedAt:g} {board.SystemState.Location}", () => Play(board)));
     }
     await Choose(choices);
 }
@@ -106,7 +108,32 @@ static bool IsStarted(GameEntityState boardEntity)
     return players?.Count == 2;
 }
 
+static bool IsOwnerOrPlayer(GameEntityState boardEntity, IChangeUserService changeUserService)
+{
+    var owner = boardEntity.SystemState.OwnerId;
+    if (owner == changeUserService.CurrentUserId)
+        return true;
+    var players = boardEntity.GetPublicValue<IList<object>>(GameMasterId, "players")?.Cast<string>();
+    return players is not null && players.Contains(changeUserService.CurrentUserId);
+}
+
 static bool IsComplete(GameEntityState boardEntity)
 {
     return boardEntity.GetPublicValue<bool>(GameMasterId, "isComplete");
+}
+
+async Task<ImmutableList<GameEntityState>> GetBoards(IGameStateClient gameStateClient)
+{
+    var nearby = await gameStateClient.GetEntitiesNearbyAsync()
+                 ?? throw new Exception("Failed to fetch nearby entities");
+    // Enumerate the player's boards
+    var owned = await gameStateClient.GetEntitiesOwnedAsync()
+                ?? throw new Exception("Failed to fetch owned entities");
+    // TODO: Active (not complete) boards only
+    var boards = owned.Concat(nearby)
+                      .DistinctBy(e => e.Id)
+                      .Where(entity => entity.IsTicTacToeBoard())
+                      .Where(entity => IsOwnerOrPlayer(entity, changeUserService))
+                      .ToImmutableList();
+    return boards;
 }
