@@ -1,7 +1,6 @@
 ﻿namespace TicTacToe.Console;
 
 using Monxterz.StatePlatform.Client;
-using TicTacToe.Console.Common;
 using static System.Console;
 
 public class ConsoleClientNotification : IClientNotification
