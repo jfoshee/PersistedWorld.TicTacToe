@@ -46,7 +46,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/GameMaster.Tests/GameMaster.Tests.csproj",
+                "${workspaceFolder}/PersistedWorld.TicTacToe.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
