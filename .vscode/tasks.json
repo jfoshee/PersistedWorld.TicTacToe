@@ -2,11 +2,12 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "gamemaster publish local",
+            "label": "gamemaster publish dev",
             "type": "shell",
             "command": "dotnet",
             "args": [
-                "gamemaster"
+                "gamemaster",
+                "https://app-persisted-world-dev.azurewebsites.net"
             ],
             "options": {
                 "cwd": "GameMaster"
@@ -36,6 +37,7 @@
         },
         {
             "label": "build",
+            "isBuildCommand": true,
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -48,6 +50,7 @@
         },
         {
             "label": "test",
+            "isTestCommand": true,
             "command": "dotnet",
             "type": "process",
             "args": [
