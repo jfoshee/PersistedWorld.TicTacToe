@@ -1,4 +1,4 @@
-﻿using static TicTacToe.Console.Constants;
+﻿using static GameClient.Constants;
 using System.Collections.Immutable;
 using TicTacToe.Console.Common;
 

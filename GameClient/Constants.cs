@@ -1,4 +1,4 @@
-﻿namespace TicTacToe.Console;
+﻿namespace GameClient;
 
 public static class Constants
 {

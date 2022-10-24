@@ -1,6 +1,6 @@
 ﻿using static System.Console;
 using static TicTacToe.Console.ConsoleUi;
-using static TicTacToe.Console.Constants;
+using static GameClient.Constants;
 
 // Setup services
 var baseUrl = "https://localhost:7264";
