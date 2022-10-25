@@ -44,5 +44,7 @@ Update the following locations with your GameMaster Name and ID.
 
 1. `gamemaster.json`
 2. `Constants.cs`
-3. `TicTacToeTestAttribute.cs`
 
+Next rename `TicTacToeTestAttribute` to correspond to your game. 
+
+The existing Tic Tac toe scripts and tests may be adapted as a starting point for simple games.
