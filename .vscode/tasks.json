@@ -23,6 +23,26 @@
             "problemMatcher": []
         },
         {
+            "label": "gamemaster publish local",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "gamemaster"
+            ],
+            "options": {
+                "cwd": "GameMaster"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "gamemaster publish production",
             "type": "shell",
             "command": "dotnet",
