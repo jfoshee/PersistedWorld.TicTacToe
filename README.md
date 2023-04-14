@@ -22,6 +22,8 @@ Clone or copy this repository and open the directory in VS Code.
 
 The `tasks.json` file has been seeded with some helpful tasks that can be launched from VS Code.
 
+Restore dotnet tools via `dotnet tool restore`.
+
 Test your environment by running the Test Task. 
 
 <kbd>ctrl</kbd> + <kbd>shift</kbd> + <kbd>p</kbd>

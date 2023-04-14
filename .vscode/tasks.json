@@ -2,6 +2,24 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "dotnet tool restore",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "tool",
+                "restore"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "gamemaster publish dev",
             "type": "shell",
             "command": "dotnet",
